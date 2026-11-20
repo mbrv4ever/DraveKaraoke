@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16131f"><link rel="manifest" href="/manifest.json"><link rel="icon" href="/icon.png">
+<title>DraveKaraoke</title>
+<style>
+:root{--bg:#16131f;--vak:#221c34;--rand:#4a3d66;--paars:#b59cff;--turq:#5ee0c8;--geel:#ffdc5a;--tekst:#f0f0f5}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tekst);font-family:"Segoe UI",Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+body{padding:10px 12px 150px}
+h1{font-size:26px;margin:4px 0 10px;color:var(--paars)}
+button{font:inherit;color:#fff;background:var(--vak);border:3px solid var(--paars);border-radius:16px;padding:14px 10px;font-size:20px;font-weight:700}
+button:active{transform:scale(.97)}
+.rij{display:flex;gap:8px}.rij>*{flex:1}
+#tabs{display:flex;gap:8px;margin-bottom:10px;position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0}#tabs button{flex:1;font-size:18px;padding:12px 4px}
+#tabs button.aan{background:#4a3d66}
+.vak{display:none}.vak.aan{display:block}
+input{width:100%;font-size:22px;padding:14px;border-radius:14px;border:3px solid var(--turq);background:#0f0d17;color:#fff}
+.lied{display:flex;gap:10px;align-items:center;background:var(--vak);border:2px solid var(--rand);border-radius:14px;padding:8px;margin:8px 0}
+.lied img{width:104px;height:59px;object-fit:cover;border-radius:8px;flex:none}
+.lied .t{flex:1;min-width:0;overflow-wrap:anywhere;font-size:17px;line-height:1.25}.lied .t small{color:#9a93b8;display:block;margin-top:3px}
+.lied button{flex:none;font-size:18px;padding:12px 14px;border-color:var(--turq)}
+#regels{font-size:26px;line-height:1.35;padding-bottom:40vh}
+#regels div{padding:6px 8px;border-radius:10px;color:#8d87a8;transition:all .2s}
+#regels div.nu{color:#fff;font-size:34px;font-weight:700;background:#2a2440}
+#regels div.mijn{text-decoration:underline;text-decoration-thickness:3px}
+#nubalk{background:var(--vak);border:2px solid var(--rand);border-radius:14px;padding:10px;margin-bottom:10px;font-size:18px}
+#nubalk b{color:var(--geel)}
+#bediening{position:fixed;left:0;right:0;bottom:0;background:#0f0d17;border-top:3px solid var(--rand);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+#bediening button{font-size:26px;padding:14px 4px}
+#melding{background:#7a3a20;border:3px solid #ffa070;border-radius:14px;padding:10px;margin-bottom:10px;display:none;font-size:18px}
+#wiebord{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;justify-content:center;padding:20px;gap:14px;z-index:9}
+#wiebord h2{font-size:30px;text-align:center;margin:0 0 10px}
+#wiebord button{font-size:28px;padding:20px}
+.klein{font-size:16px;color:#9a93b8;margin:6px 0}
+.ok{color:#5ee0c8;font-weight:700}.alleen{color:#ffb070}
+#tekstzoek{background:var(--vak);border:2px solid var(--rand);border-radius:14px;padding:10px;margin-bottom:10px}
+#tekstzoek input{font-size:20px}
+.duetuitleg{background:#2a2440;border-radius:12px;padding:10px;font-size:17px;margin-bottom:8px;display:none}
+</style></head><body>
+<div id="wiebord"><h2>🎤 Wie ben jij?</h2><div id="wienamen" style="display:flex;flex-direction:column;gap:12px"></div>
+  <input id="wienieuw" placeholder="Of typ je naam"><button onclick="kiesWie(document.getElementById('wienieuw').value)">Dat ben ik</button></div>
+<h1>🎤 DraveKaraoke <span id="ik" style="font-size:18px;color:#9a93b8"></span></h1>
+<div id="melding"></div>
+<div id="toast" style="position:fixed;left:12px;right:12px;top:12px;z-index:20;background:#1f5a4e;border:3px solid #5ee0c8;border-radius:14px;padding:16px;font-size:22px;font-weight:700;display:none;text-align:center"></div>
+<div class="rij" style="margin-bottom:8px"><button id="modusknop" onclick="wisselModus()" style="font-size:22px;padding:12px">…</button></div>
+<div id="tabs"><button id="t_zing" class="aan" onclick="tab('zing')">🎶 Zingen</button><button id="t_zoek" onclick="tab('zoek')">🔍 Zoeken</button><button id="t_rij" onclick="tab('rij')">📋 Wachtrij</button></div>
+
+<div id="v_zing" class="vak aan">
+  <div id="nubalk">Nog niets aan het spelen. Kies een liedje bij 🔍 Zoeken.</div>
+  <div id="karaokedeel">
+  <div class="rij" style="margin-bottom:8px"><button onclick="schuif(-0.5)">⏪ Tekst eerder</button><button onclick="schuif(0.5)">Tekst later ⏩</button></div>
+  <div class="rij" style="margin-bottom:8px"><button id="duetknop" onclick="duetWissel()">🎭 Duet aanpassen: UIT</button></div>
+  <div class="duetuitleg" id="duetuitleg">Tik op een regel: <span style="color:var(--paars)">■ <span class="n0"></span></span> → <span style="color:var(--turq)">■ <span class="n1"></span></span> → <span style="color:var(--geel)">■ samen</span> → gewoon.</div>
+  <div id="regels"></div>
+  <div id="tekstzoek"><div class="klein" id="gevonden"></div>
+    <div class="rij"><input id="tvraag" placeholder="Zoek tekst: artiest en titel" enterkeyhint="search"><button style="flex:none;border-color:var(--turq)" onclick="zoekTekst()">Zoek tekst</button></div>
+    <div class="klein">Verkeerde of geen tekst? Typ bijv. "Pastorale Ramses Shaffy".</div></div>
+  </div>
+  <div id="muziekdeel" style="display:none;font-size:22px;line-height:1.4">
+    <p>🎵 <b>Muziek-modus</b>: geen songtekst. De rij speelt gewoon op volgorde.</p>
+    <p class="klein" style="font-size:18px">Is de rij leeg? Dan kies ik zelf iets van dezelfde artiest.</p>
+  </div>
+</div>
+<div id="v_zoek" class="vak">
+  <div class="rij"><input id="vraag" placeholder="Liedje of artiest" enterkeyhint="search"><button style="flex:none;border-color:var(--turq)" onclick="zoek()">Zoek</button></div>
+  <div class="klein">Tip: zet er "karaoke" achter, dan vind je versies zonder zang.<br><span class="ok">✔</span> = speelt in DraveKaraoke · <span class="alleen">▶ YouTube</span> = speelt op de YouTube-pagina</div>
+  <div id="uitslag"></div>
+</div>
+<div id="v_rij" class="vak"><div id="rij"></div>
+  <a id="appknop" href="/DraveKaraoke.apk" style="display:none;margin-top:18px;text-align:center;font-size:22px;font-weight:700;color:#fff;background:#221d33;border:3px solid var(--turq);border-radius:14px;padding:16px;text-decoration:none">📲 Download de Android-app<br><span style="font-size:15px;font-weight:400;color:#9a93b8">Dan hoef je nooit meer te scannen</span></a></div>
+
+<div id="bediening"><div class="rij"><button onclick="bedien('zachter')">🔉</button><button id="pauzeknop" onclick="bedien(stand&&stand.speelt?'pauze':'verder')">⏯</button><button onclick="bedien('opnieuw')">⏮</button><button onclick="bedien('volgende')">⏭</button><button onclick="bedien('harder')">🔊</button></div></div>
+
+<script>
+const KLEUR=["var(--paars)","var(--turq)"];
+let ik="", stand=null, standT=0, tekst=null, duetAan=false, laatsteI=-2;
+try{ ik=localStorage.getItem("karaoke_wie")||""; }catch(e){}
+function api(p,d){ return fetch(p, d?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)}:{}).then(r=>r.json()); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function tab(n){ for(const x of ["zing","zoek","rij"]){ document.getElementById("v_"+x).classList.toggle("aan",x===n); document.getElementById("t_"+x).classList.toggle("aan",x===n);} if(n==="zoek") document.getElementById("vraag").focus(); }
+let wieLijst=null;
+function toonWie(){ const b=document.getElementById("wiebord"); b.style.display="flex";
+  const nieuw=JSON.stringify(stand&&stand.namen||[]); if(nieuw===wieLijst) return; wieLijst=nieuw;   // niet steeds opnieuw tekenen: dan mist je tik
+  document.getElementById("wienamen").innerHTML=(stand&&stand.namen||[]).map(n=>`<button onclick="kiesWie('${esc(n).replace(/'/g,"\\'")}')">${esc(n)}</button>`).join(""); }
+function kiesWie(n){ n=(n||"").trim(); if(!n) return; ik=n; try{localStorage.setItem("karaoke_wie",n);}catch(e){} api("/api/naam",{naam:n});
+  document.getElementById("wiebord").style.display="none"; wieLijst=null; document.getElementById("ik").textContent="("+n+" · wissel)"; }
+document.getElementById("ik").onclick=toonWie;
+document.getElementById("vraag").addEventListener("keydown",e=>{ if(e.key==="Enter") zoek(); });
+function zoek(){ const q=document.getElementById("vraag").value.trim(); if(!q) return; document.getElementById("vraag").blur();
+  const u=document.getElementById("uitslag"); u.innerHTML="<p class='klein'>Even zoeken...</p>";
+  api("/api/zoek?q="+encodeURIComponent(q)).then(d=>{ if(d.fout){u.innerHTML="<p>Zoeken lukt niet: "+esc(d.fout)+"</p>";return;}
+    u.innerHTML=(d.lijst||[]).map((x,i)=>`<div class="lied"><img src="${esc(x.plaatje)}" alt=""><div class="t">${esc(x.titel)}<small>${x.insluiten===false?'<span class="alleen">▶ YouTube</span>':'<span class="ok">✔</span>'} ${esc(x.kanaal)} · ${Math.floor(x.duur/60)}:${String(x.duur%60).padStart(2,"0")}</small></div><div style="display:flex;flex-direction:column;gap:6px;flex:none"><button onclick='voeg(${JSON.stringify(x).replace(/'/g,"&#39;")},true)'>▶ Nu zingen</button><button style="border-color:var(--rand)" onclick='voeg(${JSON.stringify(x).replace(/'/g,"&#39;")},false)'>＋ Later</button></div></div>`).join("")||"<p>Niets gevonden.</p>"; })
+  .catch(()=>{ u.innerHTML="<p>Geen verbinding met de pc.</p>"; }); }
+document.getElementById("tvraag").addEventListener("keydown",e=>{ if(e.key==="Enter") zoekTekst(); });
+function zoekTekst(){ const q=document.getElementById("tvraag").value.trim(); if(!q||!stand||!stand.nu) return; document.getElementById("tvraag").blur();
+  api("/api/tekstzoek",{q:q}).then(()=>{ tekst={id:stand.nu.id,klaar:false}; tekenRegels(); }); }
+function voeg(x,nu){ x.wie=ik; x.nu=!!nu; api("/api/voeg",x).then(d=>{
+  toast(d.plek===0?"🎤 Speelt nu: "+d.titel:"＋ Staat in de wachtrij als nummer "+d.plek); tab(d.plek===0?"zing":"rij"); })
+  .catch(()=>toast("Geen verbinding met de pc.")); }
+let toastT=0; function toast(t){ const e=document.getElementById("toast"); e.textContent=t; e.style.display="block"; clearTimeout(toastT); toastT=setTimeout(()=>e.style.display="none",4000); }
+function wisselModus(){ const m=stand&&stand.modus==="muziek"?"karaoke":"muziek"; api("/api/modus",{modus:m}).then(ververs); }
+function bedien(a){ api("/api/bedien",{actie:a}); }
+function schuif(d){ api("/api/offset",{delta:d}); if(tekst) tekst.offset=(tekst.offset||0)+d; }
+function duetWissel(){ duetAan=!duetAan; document.getElementById("duetknop").textContent="🎭 Duet aanpassen: "+(duetAan?"AAN":"UIT");
+  document.getElementById("duetuitleg").style.display=duetAan?"block":"none"; }
+function kleurVan(i){ if(!tekst||!tekst.duet) return ""; const k=tekst.duet[String(i)]; if(!k) return "";
+  if(k==="samen") return "var(--geel)"; const n=(stand.namen||[]).indexOf(k); return n>=0?KLEUR[n%2]:""; }
+function tikRegel(i){ if(!duetAan||!tekst) return; const n=stand.namen||[]; const volg=[n[0]||"", n[1]||"", "samen", ""].filter((x,j,a)=>x!==""||j===3);
+  const nu=tekst.duet[String(i)]||""; const k=volg[(volg.indexOf(nu)+1)%volg.length]; if(k) tekst.duet[String(i)]=k; else delete tekst.duet[String(i)];
+  api("/api/duet",{regel:i,kleur:k}); tekenRegels(); }
+function tekenRegels(){ const r=document.getElementById("regels");
+  const g=document.getElementById("gevonden"); g.textContent=tekst&&tekst.klaar&&tekst.gevonden?"Tekst van: "+tekst.gevonden:"";
+  document.getElementById("tekstzoek").style.display=tekst?"block":"none";
+  if(!tekst){ r.innerHTML=""; return; }
+  if(!tekst.klaar){ r.innerHTML="<p class='klein'>Songtekst zoeken...</p>"; return; }
+  if(!tekst.regels||!tekst.regels.length){ r.innerHTML="<p>Geen songtekst gevonden"+(tekst.zoek?" voor \""+esc(tekst.zoek)+"\"":"")+". Typ hieronder zelf artiest en titel. 👇</p>"; return; }
+  r.innerHTML=(tekst.meelopend?"":"<p class='klein'>Deze tekst loopt niet vanzelf mee. Scroll zelf.</p>")+
+    tekst.regels.map((x,i)=>{ const k=kleurVan(i); const mijn=tekst.duet&&(tekst.duet[String(i)]===ik||tekst.duet[String(i)]==="samen");
+      return `<div id="r${i}" onclick="tikRegel(${i})" class="${mijn?"mijn":""}" style="${k?"border-left:8px solid "+k+";":""}">${esc(x[1]||"♪")}</div>`; }).join("");
+  laatsteI=-2; }
+function volg(){ if(stand&&tekst&&tekst.meelopend&&tekst.regels&&tekst.regels.length){
+    const t=stand.tijd+(stand.speelt?(performance.now()-standT)/1000:0)+(tekst.offset||0); let i=-1;
+    for(let k=0;k<tekst.regels.length;k++){ if(tekst.regels[k][0]<=t) i=k; else break; }
+    if(i!==laatsteI){ const o=document.getElementById("r"+laatsteI); if(o) o.classList.remove("nu"); const n=document.getElementById("r"+i);
+      if(n){ n.classList.add("nu"); if(!duetAan) n.scrollIntoView({behavior:"smooth",block:"center"}); } laatsteI=i; } }
+  requestAnimationFrame(volg); }
+requestAnimationFrame(volg);
+function ververs(){ api("/api/stand").then(d=>{ stand=d; standT=performance.now();
+  if(!ik) toonWie(); else document.getElementById("ik").textContent="("+ik+" · wissel)";
+  document.querySelectorAll(".n0").forEach(e=>e.textContent=(d.namen||[])[0]||"zanger 1"); document.querySelectorAll(".n1").forEach(e=>e.textContent=(d.namen||[])[1]||"zanger 2");
+  const m=document.getElementById("melding"); m.textContent=d.melding||""; m.style.display=d.melding?"block":"none";
+  const muz=d.modus==="muziek"; document.getElementById("modusknop").textContent=muz?"🎵 Muziek-modus  ·  tik voor 🎤 Karaoke":"🎤 Karaoke-modus  ·  tik voor 🎵 Muziek";
+  document.getElementById("modusknop").style.borderColor=muz?"var(--geel)":"var(--paars)";
+  document.getElementById("karaokedeel").style.display=muz?"none":"block"; document.getElementById("muziekdeel").style.display=muz?"block":"none";
+  const nb=document.getElementById("nubalk");
+  nb.innerHTML=d.nu?(muz?`🎵 Nu: <b>${esc(d.nu.titel)}</b>`:`🎤 <b>${esc(d.nu.wie)}</b> zingt: ${esc(d.nu.titel)}`)+`${d.nu.offset?` <span class="klein">(tekst ${d.nu.offset>0?"+":""}${d.nu.offset} s)</span>`:""}`:"Nog niets aan het spelen. Kies een liedje bij 🔍 Zoeken.";
+  if(d.nu&&d.nu.tekst_klaar&&(!tekst||tekst.id!==d.nu.id||!tekst.klaar)) api("/api/tekst?id="+d.nu.id).then(t=>{ t.id=d.nu.id; tekst=t; tekenRegels(); });
+  else if(!d.nu&&tekst){ tekst=null; tekenRegels(); }
+  else if(d.nu&&!d.nu.tekst_klaar&&(!tekst||tekst.id!==d.nu.id)){ tekst={id:d.nu.id,klaar:false}; tekenRegels(); }
+  if(tekst&&d.nu&&tekst.id===d.nu.id) tekst.offset=d.nu.offset;
+  document.getElementById("rij").innerHTML=(d.nu?`<div class="lied" style="border-color:var(--geel)"><img src="${esc(d.nu.plaatje)}"><div class="t">Nu: ${esc(d.nu.titel)}<small>🎤 ${esc(d.nu.wie)}</small></div></div>`:"")+
+    (d.wachtrij||[]).map((x,i)=>`<div class="lied"><img src="${esc(x.plaatje)}"><div class="t">${i+1}. ${esc(x.titel)}<small>🎤 ${esc(x.wie)}</small></div>${x.wie===ik?`<button style="border-color:#ff7878" onclick="api('/api/weg',{nr:${x.nr}})">✖</button>`:""}</div>`).join("")+
+    (!(d.wachtrij||[]).length?"<p class='klein'>De wachtrij is leeg. Om de beurt: steeds een ander is aan de beurt.</p>":"");
+}).catch(()=>{ const m=document.getElementById("melding"); m.textContent="Geen verbinding met de pc. Staat DraveKaraoke aan?"; m.style.display="block"; }); }
+if(!/wv\)/.test(navigator.userAgent) && /Android/i.test(navigator.userAgent)) document.getElementById("appknop").style.display="block";   // niet in de app zelf
+setInterval(ververs,1000); ververs();
+</script></body></html>

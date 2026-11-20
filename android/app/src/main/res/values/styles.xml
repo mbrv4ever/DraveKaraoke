@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Drave" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#16131f</item>
+        <item name="android:statusBarColor">#16131f</item>
+        <item name="android:navigationBarColor">#0f0d17</item>
+        <item name="android:colorAccent">#b59cff</item>
+    </style>
+</resources>

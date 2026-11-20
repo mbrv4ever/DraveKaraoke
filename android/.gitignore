@@ -1,0 +1,5 @@
+sleutel/
+build/
+app/build/
+.gradle/
+local.properties

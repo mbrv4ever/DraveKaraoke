@@ -1,0 +1,29 @@
+plugins { id "com.android.application" }
+def sleutel = new Properties()
+def sf = rootProject.file("sleutel/sleutel.properties")
+if (sf.exists()) sf.withInputStream { sleutel.load(it) }
+android {
+    namespace "nl.dravenlock.karaoke"
+    compileSdk 34
+    defaultConfig {
+        applicationId "nl.dravenlock.karaoke"
+        minSdk 24
+        targetSdk 34
+        versionCode 3
+        versionName "0.2.1"
+    }
+    signingConfigs {
+        drave {
+            if (sf.exists()) {
+                storeFile rootProject.file("sleutel/" + sleutel["bestand"])
+                storePassword sleutel["wachtwoord"]
+                keyAlias sleutel["alias"]
+                keyPassword sleutel["wachtwoord"]
+            }
+        }
+    }
+    buildTypes {
+        release { minifyEnabled false; if (sf.exists()) signingConfig signingConfigs.drave }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
